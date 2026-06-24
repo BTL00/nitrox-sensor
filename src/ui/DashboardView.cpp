@@ -122,25 +122,25 @@ void DashboardView::render(const SensorReading& reading, float batteryVoltage, c
   }
 
   if (firstFrame || p != lastPressure || t != lastTemp) {
-    tft_.fillRect(0, 68, kScreenW, 14, ST77XX_BLACK);
-    drawCenteredText(34, 70, kSkyBlue, 1, p);
-    drawCenteredText(101, 70, kOrange, 1, t);
+    tft_.fillRect(0, 22, kScreenW, 48, ST77XX_BLACK);
+    drawCenteredText(kScreenW / 2, 22, kOrange, 2, p);
+    drawCenteredText(kScreenW / 2, 40, kOrange, 2, t);
     lastPressure = p;
     lastTemp = t;
   }
 
   if (firstFrame || statusValue != lastStatus) {
-    tft_.fillRect(0, 84, kScreenW, 10, ST77XX_BLACK);
-    drawCenteredText(kScreenW / 2, 84, kPaleBlue, 1, "STATUS " + statusValue);
+    tft_.fillRect(0, 72, kScreenW, 10, ST77XX_BLACK);
+    drawCenteredText(kScreenW / 2, 72, kPaleBlue, 1, "STATUS " + statusValue);
     lastStatus = statusValue;
   }
 
   if (firstFrame || mod14 != lastMod14 || mod16 != lastMod16) {
-    tft_.fillRect(0, 96, kScreenW, 40, ST77XX_BLACK);
-    drawCenteredText(34, 96, kSkyBlueBright, 1, "MOD 1.4");
-    drawCenteredText(101, 96, kOrange, 1, "MOD 1.6");
-    drawCenteredText(34, 110, kSkyBlueBright, 2, mod14);
-    drawCenteredText(101, 110, kOrange, 2, mod16);
+    tft_.fillRect(0, 84, kScreenW, 40, ST77XX_BLACK);
+    drawCenteredText(34, 84, kSkyBlueBright, 1, "MOD 1.4");
+    drawCenteredText(101, 84, kSkyBlueBright, 1, "MOD 1.6");
+    drawCenteredText(34, 98, kSkyBlueBright, 2, mod14);
+    drawCenteredText(101, 98, kOrange, 2, mod16);
     lastMod14 = mod14;
     lastMod16 = mod16;
   }
