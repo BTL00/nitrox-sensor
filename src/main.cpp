@@ -51,21 +51,8 @@ ButtonManager buttons(makeButtonConfig());
 
 DashboardView dashboard(tft);
 
-CalibrationInfo makeCalibrationInfo() {
-  CalibrationInfo info;
-  info.serialNumber = "US1010-0001";
-  info.calibrationDate = "2026-06-24";
-  info.airOffset = "+0.0%";
-  info.nitrox32Offset = "+1.2%";
-  info.nitrox36Offset = "-0.5%";
-  info.oxygenOffset = "+0.8%";
-  return info;
-}
-
-const CalibrationInfo calibrationInfo = makeCalibrationInfo();
-
 bool freezeDisplay = false;
-String statusText = "live";
+String statusText = "init";
 uint32_t lastMockPushMs = 0;
 
 void pushMockFrame() {
@@ -74,10 +61,10 @@ void pushMockFrame() {
 
   // O2 smoothly sweeps from 19% to 41%.
   const float o2 = 30.0f + 11.0f * sinf((2.0f * PI / 24.0f) * tSec);
-  const float flow = 2.4f + 1.1f * sinf((2.0f * PI / 18.0f) * tSec + 0.8f);
+  const float p = 1.03f + 0.03f * sinf((2.0f * PI / 18.0f) * tSec + 0.8f);
   const float t = 24.0f + 1.2f * sinf((2.0f * PI / 30.0f) * tSec + 1.4f);
 
-  String line = "O2:" + String(o2, 1) + ",F:" + String(flow, 2) + ",T:" + String(t, 1) + "\n";
+  String line = "O2:" + String(o2, 1) + ",P:" + String(p, 2) + ",T:" + String(t, 1) + "\n";
   mockUart.injectRx(line);
 #else
   (void)sensor;
@@ -102,11 +89,20 @@ void setup() {
     freezeDisplay = !freezeDisplay;
     statusText = freezeDisplay ? "frozen" : "live";
   });
+
+  buttons.onRightPressed([] {
+    statusText = "btn-right";
+  });
+
+#if USE_MOCK_SENSOR
+  statusText = "mock";
+#else
+  statusText = "uart";
+#endif
 }
 
 void loop() {
   buttons.poll();
-  const bool showCalibration = buttons.isRightPressed();
 
   if (millis() - lastMockPushMs >= 1000) {
     pushMockFrame();
@@ -115,9 +111,7 @@ void loop() {
 
   sensor.poll();
 
-  if (showCalibration) {
-    dashboard.renderCalibration(calibrationInfo);
-  } else if (!freezeDisplay) {
+  if (!freezeDisplay) {
     const SensorReading reading = sensor.latest();
     const float batteryV = battery.readVoltage();
     dashboard.render(reading, batteryV, statusText);

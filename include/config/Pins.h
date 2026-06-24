@@ -10,10 +10,9 @@ constexpr int TFT_RST = 23;
 constexpr int TFT_MOSI = 19;
 constexpr int TFT_SCLK = 18;
 
-// TTGO T-Display buttons.
-// On this board revision GPIO0 is the physical left button and GPIO35 is the right.
-constexpr int BTN_LEFT = 0;
-constexpr int BTN_RIGHT = 35;
+// TTGO T-Display buttons (common mapping, verify on your revision)
+constexpr int BTN_LEFT = 35;
+constexpr int BTN_RIGHT = 0;
 
 // Battery ADC input (commonly GPIO34)
 constexpr int BAT_ADC = 34;
