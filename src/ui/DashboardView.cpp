@@ -26,6 +26,8 @@ constexpr uint16_t kSkyBlueBright = 0x5D9B;
 constexpr uint16_t kPaleBlue = 0xD71C;
 constexpr uint16_t kOrange = 0xFD20;
 constexpr uint16_t kOrangeSoft = 0xFBE0;
+constexpr int kMajorMarkerCount = 8;
+constexpr int kMajorMarkers[kMajorMarkerCount] = {21, 28, 32, 36, 40, 50, 75, 95};
 
 enum class ViewMode {
   None,
@@ -221,6 +223,33 @@ void DashboardView::renderCalibration(const CalibrationInfo& calibrationInfo) {
 
 void DashboardView::drawGauge(float value) {
   const float rotationOffset = kPointerAngleDeg - valueToAngle(value);
+  int selectedMarkers[3] = {-1, -1, -1};
+  float selectedDistances[3] = {1000.0f, 1000.0f, 1000.0f};
+
+  for (int i = 0; i < kMajorMarkerCount; ++i) {
+    const int marker = kMajorMarkers[i];
+    if (marker == 21 || marker == 95) {
+      continue;
+    }
+    const float distance = fabsf(static_cast<float>(marker) - value);
+
+    if (distance < selectedDistances[0]) {
+      selectedDistances[2] = selectedDistances[1];
+      selectedMarkers[2] = selectedMarkers[1];
+      selectedDistances[1] = selectedDistances[0];
+      selectedMarkers[1] = selectedMarkers[0];
+      selectedDistances[0] = distance;
+      selectedMarkers[0] = marker;
+    } else if (distance < selectedDistances[1]) {
+      selectedDistances[2] = selectedDistances[1];
+      selectedMarkers[2] = selectedMarkers[1];
+      selectedDistances[1] = distance;
+      selectedMarkers[1] = marker;
+    } else if (distance < selectedDistances[2]) {
+      selectedDistances[2] = distance;
+      selectedMarkers[2] = marker;
+    }
+  }
 
   tft_.drawCircle(kGaugeCx, kGaugeCy, kGaugeR, kDarkGrey);
   tft_.drawCircle(kGaugeCx, kGaugeCy, kGaugeR - 1, kDarkGrey);
@@ -255,8 +284,11 @@ void DashboardView::drawGauge(float value) {
     if (major) {
       const int xl = kGaugeCx + static_cast<int>(cosf(angle) * (kGaugeR - 24));
       const int yl = kGaugeCy + static_cast<int>(sinf(angle) * (kGaugeR - 24));
-      if (isVisibleY(yl)) {
-        drawCenteredText(xl, yl - 3, ST77XX_WHITE, 1, String(marker));
+      const String markerText = String(marker);
+      const bool selected = (marker == selectedMarkers[0] || marker == selectedMarkers[1] ||
+                             marker == selectedMarkers[2]);
+      if (selected) {
+        drawCenteredText(xl, yl - 3, ST77XX_WHITE, 1, markerText);
       }
     }
   }
